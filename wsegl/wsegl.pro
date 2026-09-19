@@ -7,6 +7,7 @@ LIBS += -lpvr2d ../libwayland-egl/libwayland-egl.so
 PKGCONFIG += wayland-client wayland-server
 
 SOURCES = waylandwsegl.c
+HEADERS += wayland-sync.h
 
 include(../common/common.pri) | error("can't include common.pri")
 

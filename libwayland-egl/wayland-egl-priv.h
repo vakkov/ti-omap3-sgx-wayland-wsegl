@@ -80,8 +80,7 @@ struct wl_egl_display {
 	WSEGLConfig wseglDisplayConfigs[3];
 	struct fb_var_screeninfo var;
     struct fb_fix_screeninfo fix;
-    struct wl_queue *queue;
-    struct wl_callback *frame_callback;
+    struct wl_event_queue *queue;
     struct wl_registry *registry;
     struct sgx_wlegl *sgx_wlegl;
 };
@@ -92,6 +91,12 @@ struct wl_egl_window {
 	struct wl_surface *surface;
 	struct wl_visual *visual;
 	struct wl_egl_display *display;
+
+    /* Dispatched only by the thread rendering this window. */
+    struct wl_event_queue *queue;
+    struct wl_callback *frame_callback;
+    bool buffer_busy[WAYLANDWSEGL_MAX_BACK_BUFFERS];
+    unsigned long swap_interval;
  
 	int width;
 	int height;
@@ -133,8 +138,10 @@ struct wl_egl_pixmap {
 	uint32_t flags;
 	WSEGLPixelFormat   format;
  
- 	PVR2DMEMINFO *pvrmem;
+	PVR2DMEMINFO *pvrmem;
 };
+
+struct wl_egl_pixmap *wl_egl_pixmap_create(int width, int height, uint32_t flags);
 
 
 

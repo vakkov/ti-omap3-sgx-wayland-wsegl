@@ -61,7 +61,7 @@ wl_egl_window_create(struct wl_surface *surface,
 {
 	struct wl_egl_window *egl_window;
  
-	egl_window = malloc(sizeof *egl_window);
+	egl_window = calloc(1, sizeof *egl_window);
 	if (!egl_window)
     	return NULL;
 
@@ -76,12 +76,17 @@ wl_egl_window_create(struct wl_surface *surface,
 	egl_window->attached_width  = 0;
 	egl_window->attached_height = 0;
 	egl_window->numFlipBuffers = 0;
+	egl_window->swap_interval = 1;
 	return egl_window;
 }
 
 WL_EGL_EXPORT void
 wl_egl_window_destroy(struct wl_egl_window *egl_window)
 {
+	if (egl_window->frame_callback)
+		wl_callback_destroy(egl_window->frame_callback);
+	if (egl_window->queue)
+		wl_event_queue_destroy(egl_window->queue);
 	free(egl_window);
 }
 

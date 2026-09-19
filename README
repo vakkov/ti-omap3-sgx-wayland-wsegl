@@ -24,3 +24,29 @@ WAYLAND_DEBUG=1
 WSEGL_DEBUG=5
 LIBEGL=/usr/lib/libEGL-sgx.so
 ... other magical incantations?
+
+Rendering synchronization:
+- Each EGL window owns its frame callback and event queue. Render and destroy
+  each window on its owning render thread; destroy its EGLSurface before calling
+  wl_egl_window_destroy(). Separate windows may use separate render threads.
+- Back buffers become writable again only after wl_buffer.release. Frame
+  callbacks pace rendering but do not transfer buffer ownership.
+- Drawable deletion detaches the surface and drains outstanding buffer releases
+  before freeing exported storage. Resize uses this same path.
+- eglSwapInterval(0) disables frame-callback throttling, while still waiting for
+  buffer release when both buffers are busy.
+
+Rebuild and install libwayland-egl and waylandwsegl together: they share the
+private window structure. Target builds still require the legacy Wayland server
+headers and TI SGX/PVR2D development files used by this project.
+
+Host regression tests:
+    sh tests/run.sh
+    sh tests/run.sh --sanitize
+
+The tests need C/C++ compilers, pkg-config, wayland-scanner, modern Wayland client
+and server development libraries, and timeout. They exercise the production
+rendering code with simulated PVR allocations and ordered Wayland events in both
+debug and NDEBUG builds, plus a real Wayland socket test with concurrent event
+queues. The sanitizer option enables address, undefined-behavior and leak checks.
+They do not validate SGX execution or OMAP framebuffer ioctls on real hardware.

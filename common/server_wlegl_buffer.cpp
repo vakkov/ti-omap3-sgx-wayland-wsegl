@@ -112,5 +112,5 @@ struct remote_window_buffer *remote_window_buffer_create(unsigned int width,
     t->stride = stride;
     t->format = format;
     t->handle = handle;
+    return t;
 }
-
